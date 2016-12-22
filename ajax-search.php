@@ -42,12 +42,14 @@ class Abbey_Ajax_Search{
 
 		$search_query = new WP_Query( apply_filters( "ajax_search_query_args", $search_query_args ) );
 
-		$wp_query = $search_query;
+		$GLOBALS['wp_query'] = $search_query;
 
-		ob_start(); global $abbey_query; global $count;	?>
+		ob_start(); global $abbey_query; global $count;	
+		$current_page = (int) get_query_var( 'paged' );
+		?>
 			
-			<?php if ( $search_query->have_posts() ) : abbey_setup_query(); $count = 0; ?>
-				
+			<?php if ( $search_query->have_posts() ) : abbey_setup_query(); ?>
+				<?php $count = ( $current_page > 1 ) ? ( ( $current_page - 1 ) * (int)get_option( 'posts_per_page' ) ) : 0; ?>
 				<div class="col-md-3" id="search-results-summary">
 					<ul class="list-group">
 						<?php do_action( "abbey_search_page_summary", $abbey_query ); ?>
@@ -61,7 +63,13 @@ class Abbey_Ajax_Search{
 						<?php get_template_part("templates/content", "search"); ?>
 
 					<?php endwhile; ?> 
-
+					<div><?php the_posts_pagination( array( 'base' => get_search_link().'%_%', 
+															'format' => 'page/%#%', 
+															'type' => 'list', 
+															'prev_text' => '<<', 
+															'next_text' => '>>'
+															) 
+													); ?> </div>
 				</div>
 
 		
